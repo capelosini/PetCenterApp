@@ -1,7 +1,11 @@
 import customtkinter
 import pyautogui
+from BEAN.bean import DB
 
 class App:
+
+    db=DB()
+
     def __init__(self):
         customtkinter.set_appearance_mode("dark-blue")
         customtkinter.set_default_color_theme("blue")

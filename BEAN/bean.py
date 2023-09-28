@@ -26,7 +26,3 @@ class DB:
         if not where.strip(): return
         self.cur.execute(f"DELETE FROM {table} WHERE {where}")
         self.conn.commit()
-
-db=DB()
-db.insert(db.USERS_TABLE, {'username':'teste1', 'password':'teste1'})
-print(db.selectAll(db.USERS_TABLE))
