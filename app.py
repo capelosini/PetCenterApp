@@ -24,7 +24,7 @@ class App:
             messagebox.showinfo("Erro", "Preencha todos os campos!")
             return False
         if username.count(" ")>0 or len(username)>20:
-            messagebox.showinfo("Erro", "Nome de Usuário precisa ter até 20 caracteres e não ter espaços!")
+            messagebox.showinfo("Erro", "Username precisa ter até 20 caracteres e não ter espaços!")
             return False
         try:
             self.db.insert(self.db.USERS_TABLE, {"fullname": fullname, "username": username.lower(), "password": hashlib.sha256(password.encode()).hexdigest()})
@@ -34,6 +34,9 @@ class App:
             return False
         
     def login(self, username, password):
+        if not username.strip() or not password.strip():
+            messagebox.showinfo("Erro", "Preencha todos os campos!")
+            return False
         users=self.db.selectAll(self.db.USERS_TABLE, f"username='{username.lower()}' AND password='{hashlib.sha256(password.encode()).hexdigest()}'")
         if users:
             self.user=users[0]
@@ -57,7 +60,7 @@ class App:
 
         customtkinter.CTkLabel(master=mainFrame,text="Login", width=windowWidth/2, height=windowHeight/10, font=("Arial", 25)).pack(pady=20)
 
-        customtkinter.CTkLabel(master=mainFrame,text="Nome de Usuário", width=windowWidth/2, height=windowHeight/10).pack()
+        customtkinter.CTkLabel(master=mainFrame,text="Username", width=windowWidth/2, height=windowHeight/10).pack()
 
         username=customtkinter.CTkEntry(master=mainFrame, width=windowWidth/2, height=windowHeight/10)
         username.pack()
