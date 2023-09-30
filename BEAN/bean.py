@@ -1,12 +1,17 @@
 import sqlite3
 
 class DB:
-    USERS_TABLE="users"
+    USERS_TABLE="userlogin"
+    CLIENTS_TABLE="client"
+    ANIMALS_TABLE="animal"
+    PRODUCTS_TABLE="product"
+    SUPPLIERS_TABLE="supplier"
+    VETERINARIANS_TABLE="veterinarian"
 
     def __init__(self):
         self.conn = sqlite3.connect('BEAN/PetShopApp.db')
         self.cur = self.conn.cursor()
-        self.cur.execute(f"CREATE TABLE IF NOT EXISTS {self.USERS_TABLE} (id INTEGER PRIMARY KEY AUTOINCREMENT, username varchar(20), password varchar(30))")
+        self.cur.execute(f"CREATE TABLE IF NOT EXISTS {self.USERS_TABLE} (userID INTEGER PRIMARY KEY AUTOINCREMENT, fullname TEXT NOT NULL, username varchar(20) UNIQUE NOT NULL, password char(32) NOT NULL)")
         self.conn.commit()
 
     def insert(self, table, values):
