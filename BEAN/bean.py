@@ -9,9 +9,15 @@ class DB:
     VETERINARIANS_TABLE="veterinarian"
 
     def __init__(self):
+
+        dbStructure=[
+            f"CREATE TABLE IF NOT EXISTS {self.USERS_TABLE} (userID INTEGER PRIMARY KEY AUTOINCREMENT, fullname TEXT NOT NULL, username varchar(20) UNIQUE NOT NULL, password char(32) NOT NULL)"
+        ]
+
         self.conn = sqlite3.connect('BEAN/PetShopApp.db')
         self.cur = self.conn.cursor()
-        self.cur.execute(f"CREATE TABLE IF NOT EXISTS {self.USERS_TABLE} (userID INTEGER PRIMARY KEY AUTOINCREMENT, fullname TEXT NOT NULL, username varchar(20) UNIQUE NOT NULL, password char(32) NOT NULL)")
+        for i in dbStructure:
+            self.cur.execute(i)
         self.conn.commit()
 
     def insert(self, table, values):
