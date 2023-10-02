@@ -128,7 +128,7 @@ class App:
         mainFrame.pack(pady=20, padx=20, fill="both", expand=True)
 
         customtkinter.CTkLabel(master=mainFrame,text="Home", width=windowWidth/2, height=windowHeight/10, font=("Arial", 25)).pack(pady=20)
-        customtkinter.CTkLabel(master=mainFrame,text="Hi, "+self.user[1].split(" ")[0]+"!", width=windowWidth/2, height=windowHeight/10).pack(pady=20)
+        customtkinter.CTkLabel(master=mainFrame,text="Hi, "+self.user["fullname"].split(" ")[0]+"!", width=windowWidth/2, height=windowHeight/10).pack(pady=20)
         self.app.mainloop()
 
 App()
