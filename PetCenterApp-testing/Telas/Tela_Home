@@ -1,7 +1,0 @@
-#import costumtkinter
-import tkinter
-
-root = tkinter.Tk()
-root.geometry("1200x800")
-
-root.mainloop()
