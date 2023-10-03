@@ -11,7 +11,7 @@ class App:
     app=None
 
     def __init__(self):
-        customtkinter.set_appearance_mode("dark-blue")
+        customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("green")
         self.LoginWindow()
 
