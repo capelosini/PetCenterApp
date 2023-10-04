@@ -5,6 +5,8 @@
 
 A management app for a petshop.
 
+![Logo de Pet Shop 2 2](https://github.com/capelosini/PetCenterApp/assets/57864727/15862d5d-00d3-475b-90a7-7f101b2cfcb7)
+
 <hr />
 
 ***⚠️ This is a school project.***
