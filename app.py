@@ -1,6 +1,6 @@
 import customtkinter
 from tkinter import messagebox
-import pyautogui
+from pyautogui import size as screenSize
 from BEAN.bean import DB
 import CGV
 import hashlib
@@ -55,8 +55,8 @@ class App:
 
         windowWidth=400
         windowHeight=400
-        windowX=round(pyautogui.size()[0]/2-windowWidth/2)
-        windowY=round(pyautogui.size()[1]/2-windowHeight/2)
+        windowX=round(screenSize()[0]/2-windowWidth/2)
+        windowY=round(screenSize()[1]/2-windowHeight/2)
 
         self.app = customtkinter.CTk()
         self.app.geometry("{}x{}+{}+{}".format(str(windowWidth),str(windowHeight),str(windowX),str(windowY)))
@@ -90,8 +90,8 @@ class App:
 
         windowWidth=400
         windowHeight=600
-        windowX=round(pyautogui.size()[0]/2-windowWidth/2)
-        windowY=round(pyautogui.size()[1]/2-windowHeight/2)
+        windowX=round(screenSize()[0]/2-windowWidth/2)
+        windowY=round(screenSize()[1]/2-windowHeight/2)
 
         self.app = customtkinter.CTk()
         self.app.geometry("{}x{}+{}+{}".format(str(windowWidth),str(windowHeight),str(windowX),str(windowY)))
@@ -137,8 +137,8 @@ class App:
 
         windowWidth=1200
         windowHeight=800
-        windowX=round(pyautogui.size()[0]/2-windowWidth/2)
-        windowY=round(pyautogui.size()[1]/2-windowHeight/2)
+        windowX=round(screenSize()[0]/2-windowWidth/2)
+        windowY=round(screenSize()[1]/2-windowHeight/2)
 
         self.app = customtkinter.CTk()
         self.app.geometry("{}x{}+{}+{}".format(str(windowWidth),str(windowHeight),str(windowX),str(windowY)))
