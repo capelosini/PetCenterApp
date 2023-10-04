@@ -4,7 +4,6 @@ import pyautogui
 from BEAN.bean import DB
 import CGV
 import hashlib
-import tkinter
 
 class App:
     db=DB()
@@ -12,7 +11,13 @@ class App:
     app=None
 
     def __init__(self):
-        customtkinter.set_appearance_mode("dark")
+        ap=self.db.selectAll(self.db.APP_CONFIG_TABLE, "name='appearance'")
+        if ap:
+            customtkinter.set_appearance_mode(ap[0]["value"])
+        else:
+            customtkinter.set_appearance_mode("dark")
+            self.db.insert(self.db.APP_CONFIG_TABLE, {"name": "appearance", "value": "dark"})
+
         customtkinter.set_default_color_theme("green")
         self.LoginWindow()
 
@@ -125,8 +130,10 @@ class App:
             self.now=frame
             self.now.grid(row=0, column=1, pady=10, padx=10, sticky="snew")
 
-        def change_appearance_mode_event(self, new_appearance_mode: str):
-            customtkinter.set_appearance_mode(new_appearance_mode)
+        def change_appearance_mode_event(v):
+            new=v.lower()
+            customtkinter.set_appearance_mode(new)
+            self.db.execute(f"UPDATE {self.db.APP_CONFIG_TABLE} SET value='{new}' WHERE name='appearance'")
 
         windowWidth=1200
         windowHeight=800
@@ -176,9 +183,9 @@ class App:
         leftFrame_button5.grid(row=4, column=0, padx=10, pady=10, sticky="n")
         appearance_mode_label=customtkinter.CTkLabel(leftFrame, text="Appearance Mode:", anchor="w")
         appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0), sticky="n")
-        appearance_mode_optionemenu=customtkinter.CTkOptionMenu(leftFrame, values=["light", "dark", "system"], command=lambda:change_appearance_mode_event)
+        appearance_mode_optionemenu=customtkinter.CTkComboBox(leftFrame, values=["Light", "Dark", "System"], command=change_appearance_mode_event)
+        appearance_mode_optionemenu.set(self.app._get_appearance_mode().title())
         appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10), sticky="n")
-
 
         self.app.mainloop()
 
