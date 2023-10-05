@@ -128,7 +128,7 @@ class App:
         def changeFrameTo(frame):
             self.now.grid_forget()
             self.now=frame
-            self.now.grid(row=0, column=1, pady=10, padx=10, sticky="snew")
+            self.now.grid(row=1, column=1, columnspan=2, pady=10, padx=10, sticky="snew")
 
         def change_appearance_mode_event(v):
             new=v.lower()
@@ -147,11 +147,16 @@ class App:
 
         self.app.grid_columnconfigure(1, weight=1)
         self.app.grid_columnconfigure((2, 3), weight=0)
-        self.app.grid_rowconfigure((0, 1), weight=1)
+        self.app.grid_rowconfigure(1, weight=1)
 
         leftFrame=customtkinter.CTkFrame(self.app, width=140, corner_radius=0)
         leftFrame.grid(row=0,column=0, rowspan=2, sticky="snew")
         leftFrame.grid_rowconfigure(4, weight=1)
+
+        userButton=customtkinter.CTkButton(self.app, width=60, corner_radius=0, text="user", command=self.UserWindow)
+        userButton.grid(row=0, column=2, padx=10, pady=0, sticky="ne")
+        searchBar=customtkinter.CTkEntry(self.app, width=400)
+        searchBar.grid(row=0, column=1, padx=10, pady=0, sticky="n")
         
 
         frame1=customtkinter.CTkFrame(self.app, width=600, height=600)
@@ -168,24 +173,49 @@ class App:
         label4.grid(row=0, column=0, padx=20, pady=(20, 10))
 
         self.now=frame1
-        self.now.grid(row=0, column=1, pady=10, padx=10, sticky="snew")
+        self.now.grid(row=1, column=1, columnspan=2, pady=10, padx=10, sticky="snew")
 
-
-        leftFrame_button1=customtkinter.CTkButton(leftFrame, width=50, height=50, text=" ", command=lambda:changeFrameTo(frame1))
+        #configurações do frame lateral
+        leftFrame_button1=customtkinter.CTkButton(leftFrame, width=50, height=50, text="Serviços", command=lambda:changeFrameTo(frame1))
         leftFrame_button1.grid(row=0, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button2=customtkinter.CTkButton(leftFrame, width=50, height=50, text=" ", command=lambda:changeFrameTo(frame2))
+        leftFrame_button2=customtkinter.CTkButton(leftFrame, width=50, height=50, text="Estoque", command=lambda:changeFrameTo(frame2))
         leftFrame_button2.grid(row=1, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button3=customtkinter.CTkButton(leftFrame, width=50, height=50, text=" ", command=lambda:changeFrameTo(frame3))
+        leftFrame_button3=customtkinter.CTkButton(leftFrame, width=50, height=50, text="Adoção", command=lambda:changeFrameTo(frame3))
         leftFrame_button3.grid(row=2, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button4=customtkinter.CTkButton(leftFrame, width=50, height=50, text=" ", command=lambda:changeFrameTo(frame4))
+        leftFrame_button4=customtkinter.CTkButton(leftFrame, width=50, height=50, text="Gerenciamento de clientes", command=lambda:changeFrameTo(frame4))
         leftFrame_button4.grid(row=3, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button5=customtkinter.CTkButton(leftFrame, width=50, height=50, text=" ", command=0)
+        leftFrame_button5=customtkinter.CTkButton(leftFrame, width=50, height=50, text="Equipe", command=0)
         leftFrame_button5.grid(row=4, column=0, padx=10, pady=10, sticky="n")
         appearance_mode_label=customtkinter.CTkLabel(leftFrame, text="Appearance Mode:", anchor="w")
         appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0), sticky="n")
         appearance_mode_optionemenu=customtkinter.CTkComboBox(leftFrame, values=["Light", "Dark", "System"], command=change_appearance_mode_event)
         appearance_mode_optionemenu.set(self.app._get_appearance_mode().title())
         appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10), sticky="n")
+
+        #configurações da barra de pesquisa
+
+
+        self.app.mainloop()
+
+    
+    def UserWindow(self):
+
+        windowWidth=200
+        windowHeight=200
+        windowX=round(screenSize()[0]/2-windowWidth/2)
+        windowY=round(screenSize()[1]/2-windowHeight/2)
+
+        self.app = customtkinter.CTk()
+        self.app.geometry("{}x{}+{}+{}".format(str(windowWidth),str(windowHeight),str(windowX+500),str(windowY-240)), )
+        self.app.title("Conta")
+        self.app.iconbitmap("imgs/icon.ico")
+
+        self.app.grid_rowconfigure(0, weight=1)
+
+        mainFrame=customtkinter.CTkFrame(self.app, width=180, height=100)
+        mainFrame.grid(row=0, column=0, padx=10, pady=10, sticky="snew")
+        logoutButton=customtkinter.CTkButton(self.app, width=180, height=50, text="Sair", command=lambda:self.goto(self.LoginWindow))
+        logoutButton.grid(row=1, column=0, sticky="snew")
 
         self.app.mainloop()
 
