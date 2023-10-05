@@ -49,10 +49,9 @@ class App:
             self.goto(self.HomeWindow)
         else:
             messagebox.showinfo("Erro", "Usuário ou senha incorretos!")
-
-
+    
     def LoginWindow(self):
-
+        
         windowWidth=400
         windowHeight=400
         windowX=round(screenSize()[0]/2-windowWidth/2)
@@ -84,6 +83,8 @@ class App:
         gotoRegisterButton=customtkinter.CTkButton(master=mainFrame, text="Fazer Registro", width=20, command=lambda:self.goto(self.RegisterWindow))
         gotoRegisterButton.pack(pady=20, padx=15, side="right")
 
+        self.app.bind("<Return>", lambda e:self.login(username.get(), password.get()))
+        
         self.app.mainloop()
     
     def RegisterWindow(self):
@@ -155,19 +156,44 @@ class App:
 
         userButton=customtkinter.CTkButton(self.app, width=60, corner_radius=0, text="user", command=self.UserWindow)
         userButton.grid(row=0, column=2, padx=10, pady=0, sticky="ne")
-        searchBar=customtkinter.CTkEntry(self.app, width=400)
-        searchBar.grid(row=0, column=1, padx=10, pady=0, sticky="n")
+        searchBar=customtkinter.CTkEntry(self.app, placeholder_text="Digite sua pesquisa")
+        searchBar.grid(row=0, column=1, padx=10, pady=0, sticky="snew")
         
-
+        #configurações do frame de serviços
         frame1=customtkinter.CTkFrame(self.app, width=600, height=600)
         label1=customtkinter.CTkLabel(frame1, text="frame1", font=customtkinter.CTkFont(size=20, weight="bold"))
         label1.grid(row=0, column=3, padx=20, pady=(20, 10))
+
+        #configurações do frame de compras
         frame2=customtkinter.CTkFrame(self.app, width=600, height=600)
-        label2=customtkinter.CTkLabel(frame2, text="frame2", font=customtkinter.CTkFont(size=20, weight="bold"))
-        label2.grid(row=0, column=1, padx=20, pady=(20, 10))
+        frame2.grid_columnconfigure(0, weight=1)
+        frame2.grid_rowconfigure(1, weight=1)
+        label2=customtkinter.CTkLabel(frame2, text="Estoque", font=customtkinter.CTkFont(size=20, weight="bold"))
+        label2.grid(row=0, column=0, padx=20, pady=(20, 10))
+        frameProdutos=customtkinter.CTkScrollableFrame(frame2, width=700, height=700)
+        frameProdutos.grid(row=1, column=0, padx=20, pady=20, sticky="w")
+        frameProdutos.grid_columnconfigure(0, weight=1)
+        self.produtos=[]
+        for i in range(10):
+            produto = customtkinter.CTkLabel(frameProdutos, text=f"Produto {i}")
+            produto.grid(row=i, column=0, padx=20, pady=10)
+            botãoComprar=customtkinter.CTkButton(frameProdutos, text="Comprar", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
+            botãoComprar.grid(row=i, column=1, padx=20, pady=10, sticky="e")
+            botãoEditar=customtkinter.CTkButton(frameProdutos, text="EditarProduto", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
+            botãoEditar.grid(row=i, column=2, padx=20, pady=10, sticky="e")
+            self.produtos.append(produto)
+            self.produtos.append(botãoComprar)
+            self.produtos.append(botãoEditar)
+        addButton=customtkinter.CTkButton(frame2, text="Adicionar novo item +")
+        addButton.grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        
+
+        #configurações do frame de adoção
         frame3=customtkinter.CTkFrame(self.app, width=600, height=600)
         label3=customtkinter.CTkLabel(frame3, text="fuihibin", font=customtkinter.CTkFont(size=20, weight="bold"))
         label3.grid(row=0, column=2, padx=20, pady=(20, 10))
+
+        #configurações do frame de cadastros
         frame4=customtkinter.CTkFrame(self.app, width=600, height=600)
         label4=customtkinter.CTkLabel(frame4, text="Olá mundo!", font=customtkinter.CTkFont(size=20, weight="bold"))
         label4.grid(row=0, column=0, padx=20, pady=(20, 10))
@@ -182,7 +208,7 @@ class App:
         leftFrame_button2.grid(row=1, column=0, padx=10, pady=10, sticky="n")
         leftFrame_button3=customtkinter.CTkButton(leftFrame, width=50, height=50, text="Adoção", command=lambda:changeFrameTo(frame3))
         leftFrame_button3.grid(row=2, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button4=customtkinter.CTkButton(leftFrame, width=50, height=50, text="Gerenciamento de clientes", command=lambda:changeFrameTo(frame4))
+        leftFrame_button4=customtkinter.CTkButton(leftFrame, width=50, height=50, text="Gerenciamento\n de clientes", command=lambda:changeFrameTo(frame4))
         leftFrame_button4.grid(row=3, column=0, padx=10, pady=10, sticky="n")
         leftFrame_button5=customtkinter.CTkButton(leftFrame, width=50, height=50, text="Equipe", command=0)
         leftFrame_button5.grid(row=4, column=0, padx=10, pady=10, sticky="n")
