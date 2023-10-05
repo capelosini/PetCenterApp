@@ -146,7 +146,9 @@ class App:
         userIcon=customtkinter.CTkImage(light_image=Image.open("imgs/user.ico"), dark_image=Image.open("imgs/user.ico"), size=(50, 50))
         calendarIcon=customtkinter.CTkImage(light_image=Image.open("imgs/calendar.ico"), dark_image=Image.open("imgs/calendar.ico"), size=(35, 35))
         cartIcon=customtkinter.CTkImage(light_image=Image.open("imgs/cart.ico"), dark_image=Image.open("imgs/cart.ico"), size=(35, 35))
-
+        adoptIcon=customtkinter.CTkImage(light_image=Image.open("imgs/adopt.png"), dark_image=Image.open("imgs/adopt.png"), size=(35, 35))
+        clientsIcon=customtkinter.CTkImage(light_image=Image.open("imgs/clients.ico"), dark_image=Image.open("imgs/clients.ico"), size=(35, 35))
+        employeesIcon=customtkinter.CTkImage(light_image=Image.open("imgs/employees.ico"), dark_image=Image.open("imgs/employees.ico"), size=(35, 35))
         self.app = customtkinter.CTk()
         self.app.geometry("{}x{}+{}+{}".format(str(windowWidth),str(windowHeight),str(windowX),str(windowY)))
         self.app.title("Home")
@@ -178,21 +180,15 @@ class App:
         label2=customtkinter.CTkLabel(frame2, text="Estoque", font=customtkinter.CTkFont(size=20, weight="bold"))
         label2.grid(row=0, column=0, padx=20, pady=(20, 10))
         frameProdutos=customtkinter.CTkScrollableFrame(frame2, width=700, height=700)
-        frameProdutos.grid(row=1, column=0, padx=20, pady=20, sticky="w")
+        frameProdutos.grid(row=1, column=0, padx=20, pady=20, sticky="snew")
         frameProdutos.grid_columnconfigure(0, weight=1)
-        self.produtos=[]
-        for i in range(10):
-            produto = customtkinter.CTkLabel(frameProdutos, text=f"Produto {i+1}")
-            produto.grid(row=i, column=0, padx=20, pady=10)
-            botãoComprar=customtkinter.CTkButton(frameProdutos, text="Comprar", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-            botãoComprar.grid(row=i, column=1, padx=20, pady=10, sticky="e")
-            botãoEditar=customtkinter.CTkButton(frameProdutos, text="EditarProduto", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-            botãoEditar.grid(row=i, column=2, padx=20, pady=10, sticky="e")
-            self.produtos.append(produto)
-            self.produtos.append(botãoComprar)
-            self.produtos.append(botãoEditar)
-        addButton=customtkinter.CTkButton(frame2, text="Adicionar novo item +")
-        addButton.grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        products=self.db.selectAll(self.db.PRODUCTS_TABLE)
+        for i in range(len(products)):
+            p=products[i]
+            customtkinter.CTkLabel(frameProdutos, text=f"Nome: {p['name']} | Marca: {p['brand']} | QTD: {p['stock']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkButton(frameProdutos, text="Comprar", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=1, padx=20, pady=10, sticky="e")
+            customtkinter.CTkButton(frameProdutos, text="EditarProduto", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+        customtkinter.CTkButton(frame2, text="Adicionar novo item +").grid(row=2, column=0, padx=20, pady=20, sticky="w")
         
 
         #configurações do frame de adoção
@@ -204,19 +200,13 @@ class App:
         frameAnimais=customtkinter.CTkScrollableFrame(frame3)
         frameAnimais.grid(row=1, column=0, padx=20, pady=20, sticky="snew")
         frameAnimais.grid_columnconfigure(0, weight=1)
-        self.animais=[]
-        for i in range(10):
-            animal = customtkinter.CTkLabel(frameAnimais, text=f"Animal {i+1}", font=customtkinter.CTkFont(size=20, weight="bold"))
-            animal.grid(row=i, column=0, padx=20, pady=10)
-            cadastrarAdoção=customtkinter.CTkButton(frameAnimais, text="Cadastrar adoção", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-            cadastrarAdoção.grid(row=i, column=1, padx=20, pady=10, sticky="e")
-            botãoEditar=customtkinter.CTkButton(frameAnimais, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-            botãoEditar.grid(row=i, column=2, padx=20, pady=10, sticky="e")
-            self.animais.append(animal)
-            self.animais.append(cadastrarAdoção)
-            self.animais.append(botãoEditar)
-        addButton=customtkinter.CTkButton(frame3, text="Adicionar novo animal +")
-        addButton.grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        adoptAnimals=self.db.selectAll(self.db.ANIMALS_TABLE, where="owner is null")
+        for i in range(len(adoptAnimals)):
+            a=adoptAnimals[i]
+            customtkinter.CTkLabel(frameAnimais, text=f"Nome: {a['name']} | Idade: {a['age']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkButton(frameAnimais, text="Cadastrar adoção", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=1, padx=20, pady=10, sticky="e")
+            customtkinter.CTkButton(frameAnimais, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+        customtkinter.CTkButton(frame3, text="Adicionar novo animal +", command=lambda:self.AddWindow("animal")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
 
         #configurações do frame de cadastros
         frame4=customtkinter.CTkFrame(self.app, width=600, height=600)
@@ -233,27 +223,21 @@ class App:
         frameClientes=customtkinter.CTkScrollableFrame(tab.tab("Clientes"))
         frameClientes.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
         frameClientes.grid_columnconfigure(0, weight=1)
-        self.clientes=[]
-        for i in range(10):
-            cliente = customtkinter.CTkLabel(frameClientes, text=f"Cliente {i+1}", font=customtkinter.CTkFont(size=20, weight="bold"))
-            cliente.grid(row=i, column=0, padx=20, pady=10)
-            botãoEditar=customtkinter.CTkButton(frameClientes, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-            botãoEditar.grid(row=i, column=2, padx=20, pady=10, sticky="e")
-            self.clientes.append(cliente)
-            self.clientes.append(botãoEditar)
+        clients=self.db.selectAll(self.db.CLIENTS_TABLE)
+        for i in range(len(clients)):
+            c=clients[i]
+            customtkinter.CTkLabel(frameClientes, text=f"Nome: {c['name']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkButton(frameClientes, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+        
         frameFornecedores=customtkinter.CTkScrollableFrame(tab.tab("Fornecedores"))
         frameFornecedores.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
         frameFornecedores.grid_columnconfigure(0, weight=1)
-        self.fornecedores=[]
-        for i in range(4):
-            fornecedor = customtkinter.CTkLabel(frameFornecedores, text=f"Fornecedor {i+1}", font=customtkinter.CTkFont(size=20, weight="bold"))
-            fornecedor.grid(row=i, column=0, padx=20, pady=10)
-            botãoEditar=customtkinter.CTkButton(frameFornecedores, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-            botãoEditar.grid(row=i, column=2, padx=20, pady=10, sticky="e")
-            self.fornecedores.append(fornecedor)
-            self.fornecedores.append(botãoEditar)
-        addButton=customtkinter.CTkButton(frame4, text="Adicionar novo Cliente +")
-        addButton.grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        suppliers=self.db.selectAll(self.db.SUPPLIERS_TABLE)
+        for i in range(len(suppliers)):
+            s=suppliers[i]
+            customtkinter.CTkLabel(frameFornecedores, text=f"Nome: {s['name']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkButton(frameFornecedores, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+        customtkinter.CTkButton(frame4, text="Adicionar novo Cliente +", command=lambda:self.AddWindow("cliente")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
 
         #configurações do frame da equipe
         frame5=customtkinter.CTkFrame(self.app, width=600, height=600)
@@ -270,27 +254,21 @@ class App:
         frameFunc=customtkinter.CTkScrollableFrame(tab2.tab("Funcionários"))
         frameFunc.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
         frameFunc.grid_columnconfigure(0, weight=1)
-        self.funcs=[]
-        for i in range(10):
-            func = customtkinter.CTkLabel(frameFunc, text=f"Funcionário {i+1}", font=customtkinter.CTkFont(size=20, weight="bold"))
-            func.grid(row=i, column=0, padx=20, pady=10)
-            botãoEditar=customtkinter.CTkButton(frameFunc, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-            botãoEditar.grid(row=i, column=2, padx=20, pady=10, sticky="e")
-            self.funcs.append(func)
-            self.funcs.append(botãoEditar)
+        employees=self.db.selectAll(self.db.EMPLOYEES_TABLE)
+        for i in range(len(employees)):
+            e=employees[i]
+            customtkinter.CTkLabel(frameFunc, text=f"Nome: {e[i]}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkButton(frameFunc, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+        
         frameVet=customtkinter.CTkScrollableFrame(tab2.tab("Veterinários"))
         frameVet.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
         frameVet.grid_columnconfigure(0, weight=1)
-        self.vets=[]
-        for i in range(4):
-            vet = customtkinter.CTkLabel(frameVet, text=f"Veterinário {i+1}", font=customtkinter.CTkFont(size=20, weight="bold"))
-            vet.grid(row=i, column=0, padx=20, pady=10)
-            botãoEditar=customtkinter.CTkButton(frameVet, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-            botãoEditar.grid(row=i, column=2, padx=20, pady=10, sticky="e")
-            self.vets.append(vet)
-            self.vets.append(botãoEditar)
-        addButton=customtkinter.CTkButton(frame5, text="Adicionar novo Funcionário +")
-        addButton.grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        veterinarians=self.db.selectAll(self.db.VETERINARIANS_TABLE)
+        for i in range(len(veterinarians)):
+            v=veterinarians[i]
+            customtkinter.CTkLabel(frameVet, text=f"Nome: {v[i]}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkButton(frameVet, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+        customtkinter.CTkButton(frame5, text="Adicionar novo Funcionário +").grid(row=2, column=0, padx=20, pady=20, sticky="w")
 
 
         self.now=frame1
@@ -301,11 +279,11 @@ class App:
         leftFrame_button1.grid(row=0, column=0, padx=10, pady=10, sticky="n")
         leftFrame_button2=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=cartIcon, command=lambda:changeFrameTo(frame2))
         leftFrame_button2.grid(row=1, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button3=customtkinter.CTkButton(leftFrame, width=80, height=80, text="Adoção", command=lambda:changeFrameTo(frame3))
+        leftFrame_button3=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=adoptIcon, command=lambda:changeFrameTo(frame3))
         leftFrame_button3.grid(row=2, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button4=customtkinter.CTkButton(leftFrame, width=80, height=80, text="Gerenciamento\n de clientes", command=lambda:changeFrameTo(frame4))
+        leftFrame_button4=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=clientsIcon, command=lambda:changeFrameTo(frame4))
         leftFrame_button4.grid(row=3, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button5=customtkinter.CTkButton(leftFrame, width=80, height=80, text="Equipe", command=lambda:changeFrameTo(frame5))
+        leftFrame_button5=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=employeesIcon, command=lambda:changeFrameTo(frame5))
         leftFrame_button5.grid(row=4, column=0, padx=10, pady=10, sticky="n")
         appearance_mode_label=customtkinter.CTkLabel(leftFrame, text="Appearance Mode:", anchor="w")
         appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0), sticky="n")
@@ -342,6 +320,46 @@ class App:
         mainFrame.grid(row=0, column=0, padx=10, pady=10, sticky="snew")
         logoutButton=customtkinter.CTkButton(app, width=180, height=50, text="Sair", command=exitBTN)
         logoutButton.grid(row=1, column=0, sticky="snew")
+
+        app.mainloop()
+    
+    def AddWindow(self, var):
+
+        windowWidth=400
+        windowHeight=400
+        windowX=round(screenSize()[0]/2-windowWidth/2)
+        windowY=round(screenSize()[1]/2-windowHeight/2)
+
+        app = customtkinter.CTk()
+        app.geometry("{}x{}+{}+{}".format(str(windowWidth),str(windowHeight),str(windowX),str(windowY)), )
+        app.title(f"Novo {var}")
+        app.iconbitmap("imgs/icon.ico")
+
+        mainFrame=customtkinter.CTkFrame(app)
+        mainFrame.pack(padx=10, pady=10, fill="both", expand=True)
+        titleLabel=customtkinter.CTkLabel(mainFrame, text=f"Novo {var}")
+        titleLabel.pack(padx=10, pady=10)
+
+        if var =="cliente":
+            nameEntry=customtkinter.CTkEntry(mainFrame)
+            nameEntry.pack(padx=10, pady=10)
+            emailEntry=customtkinter.CTkEntry(mainFrame)
+            emailEntry.pack(padx=10, pady=10)
+            cpfEntry=customtkinter.CTkEntry(mainFrame)
+            cpfEntry.pack(padx=10, pady=10)
+            phoneEntry=customtkinter.CTkEntry(mainFrame)
+            phoneEntry.pack(padx=10, pady=10)
+            addressEntry=customtkinter.CTkEntry(mainFrame)
+            addressEntry.pack(padx=10, pady=10)
+
+        elif var =="animal":
+            nameEntry=customtkinter.CTkEntry(mainFrame)
+            nameEntry.pack(padx=10, pady=10)
+            ageEntry=customtkinter.CTkEntry(mainFrame)
+            ageEntry.pack(padx=10, pady=10)
+            typeBox=customtkinter.CTkComboBox(mainFrame, values=["Cachorro", "Gato", "Hamster", "Peixe", "Pássaro"])
+            typeBox.pack(padx=10, pady=10)
+
 
         app.mainloop()
 
