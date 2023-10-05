@@ -175,20 +175,21 @@ class App:
 
         #configurações do frame de compras
         frame2=customtkinter.CTkFrame(self.app, width=600, height=600)
-        frame2.grid_columnconfigure(0, weight=1)
+        frame2.grid_columnconfigure((0, 1), weight=1)
         frame2.grid_rowconfigure(1, weight=1)
         label2=customtkinter.CTkLabel(frame2, text="Estoque", font=customtkinter.CTkFont(size=20, weight="bold"))
-        label2.grid(row=0, column=0, padx=20, pady=(20, 10))
+        label2.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 10))
         frameProdutos=customtkinter.CTkScrollableFrame(frame2, width=700, height=700)
-        frameProdutos.grid(row=1, column=0, padx=20, pady=20, sticky="snew")
-        frameProdutos.grid_columnconfigure(0, weight=1)
+        frameProdutos.grid(row=1, column=0, columnspan=2, padx=20, pady=20, sticky="snew")
+        frameProdutos.grid_columnconfigure((0,1), weight=1)
         products=self.db.selectAll(self.db.PRODUCTS_TABLE)
         for i in range(len(products)):
             p=products[i]
             customtkinter.CTkLabel(frameProdutos, text=f"Nome: {p['name']} | Marca: {p['brand']} | QTD: {p['stock']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
-            customtkinter.CTkButton(frameProdutos, text="Comprar", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=1, padx=20, pady=10, sticky="e")
+            customtkinter.CTkButton(frameProdutos, text="Cadastrar compra", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"), command=lambda:self.AddWindow("compra")).grid(row=i, column=1, padx=20, pady=10, sticky="e")
             customtkinter.CTkButton(frameProdutos, text="EditarProduto", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        customtkinter.CTkButton(frame2, text="Adicionar novo item +").grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        customtkinter.CTkButton(frame2, text="Adicionar novo item +", command=lambda:self.AddWindow("produto")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        customtkinter.CTkButton(frame2, text="Histórico de compras").grid(row=2, column=1, padx=20, pady=20, sticky="e")
         
 
         #configurações do frame de adoção
@@ -253,8 +254,8 @@ class App:
             s=suppliers[i]
             customtkinter.CTkLabel(frameFornecedores, text=f"Nome: {s['name']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
             customtkinter.CTkButton(frameFornecedores, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        customtkinter.CTkButton(tab.tab("Clientes"), text="Adicionar novo Cliente +", command=lambda:self.AddWindow("cliente")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
-        customtkinter.CTkButton(tab.tab("Fornecedores"), text="Adicionar novo Fornecedor +", command=lambda:self.AddWindow("fornecedor")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        customtkinter.CTkButton(tab.tab("Clientes"), text="Adicionar novo cliente +", command=lambda:self.AddWindow("cliente")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        customtkinter.CTkButton(tab.tab("Fornecedores"), text="Adicionar novo fornecedor +", command=lambda:self.AddWindow("fornecedor")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
 
         #configurações do frame da equipe
         frame5=customtkinter.CTkFrame(self.app, width=600, height=600)
@@ -285,8 +286,8 @@ class App:
             v=veterinarians[i]
             customtkinter.CTkLabel(frameVet, text=f"Nome: {v[i]}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
             customtkinter.CTkButton(frameVet, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        customtkinter.CTkButton(tab2.tab("Funcionários"), text="Adicionar novo Funcionário +").grid(row=2, column=0, padx=20, pady=20, sticky="w")
-        customtkinter.CTkButton(tab2.tab("Veterinários"), text="Adicionar novo Veterinário +").grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        customtkinter.CTkButton(tab2.tab("Funcionários"), text="Adicionar novo funcionário +", command=lambda:self.AddWindow("funcionário")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        customtkinter.CTkButton(tab2.tab("Veterinários"), text="Adicionar novo veterinário +", command=lambda:self.AddWindow("veterinário")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
 
         self.now=frame1
         self.now.grid(row=1, column=1, columnspan=2, pady=10, padx=10, sticky="snew")
@@ -354,29 +355,96 @@ class App:
 
         mainFrame=customtkinter.CTkFrame(app)
         mainFrame.pack(padx=10, pady=10, fill="both", expand=True)
-        titleLabel=customtkinter.CTkLabel(mainFrame, text=f"Novo {var}")
+        titleLabel=customtkinter.CTkLabel(mainFrame, text=f"Novo {var}", font=customtkinter.CTkFont(size=20, weight="bold"))
         titleLabel.pack(padx=10, pady=10)
 
         if var =="cliente":
-            nameEntry=customtkinter.CTkEntry(mainFrame)
+            nameEntry=customtkinter.CTkEntry(mainFrame, width=300)
             nameEntry.pack(padx=10, pady=10)
-            emailEntry=customtkinter.CTkEntry(mainFrame)
+            emailEntry=customtkinter.CTkEntry(mainFrame, width=300)
             emailEntry.pack(padx=10, pady=10)
-            cpfEntry=customtkinter.CTkEntry(mainFrame)
+            cpfEntry=customtkinter.CTkEntry(mainFrame, width=300)
             cpfEntry.pack(padx=10, pady=10)
-            phoneEntry=customtkinter.CTkEntry(mainFrame)
+            phoneEntry=customtkinter.CTkEntry(mainFrame, width=300)
             phoneEntry.pack(padx=10, pady=10)
-            addressEntry=customtkinter.CTkEntry(mainFrame)
+            addressEntry=customtkinter.CTkEntry(mainFrame, width=300)
             addressEntry.pack(padx=10, pady=10)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton.pack(padx=10, pady=10)
 
         elif var =="animal":
-            nameEntry=customtkinter.CTkEntry(mainFrame)
+            app.geometry("{}x{}+{}+{}".format(str(windowWidth),int(300),str(windowX),str(windowY)), )
+            nameEntry=customtkinter.CTkEntry(mainFrame, width=300)
             nameEntry.pack(padx=10, pady=10)
             ageEntry=customtkinter.CTkEntry(mainFrame)
             ageEntry.pack(padx=10, pady=10)
             typeBox=customtkinter.CTkComboBox(mainFrame, values=["Cachorro", "Gato", "Hamster", "Peixe", "Pássaro"])
             typeBox.pack(padx=10, pady=10)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton.pack(padx=10, pady=10)
 
+        elif var =="produto":
+            nameEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            nameEntry.pack(padx=10, pady=10)
+            priceEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            priceEntry.pack(padx=10, pady=10)
+            brandEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            brandEntry.pack(padx=10, pady=10)
+            stockEntry=customtkinter.CTkEntry(mainFrame)
+            stockEntry.pack(padx=10, pady=10)
+            descriptionEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            descriptionEntry.pack(padx=10, pady=10)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton.pack(padx=10, pady=10)
+
+        elif var =="fornecedor":
+            nameEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            nameEntry.pack(padx=10, pady=10)
+            addressEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            addressEntry.pack(padx=10, pady=10)
+            phoneEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            phoneEntry.pack(padx=10, pady=10)
+            emailEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            emailEntry.pack(padx=10, pady=10)
+            cnpjEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            cnpjEntry.pack(padx=10, pady=10)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton.pack(padx=10, pady=10)
+
+        elif var=="veterinário":
+            nameEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            nameEntry.pack(padx=10, pady=10)
+            phoneEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            phoneEntry.pack(padx=10, pady=10)
+            emailEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            emailEntry.pack(padx=10, pady=10)
+            cpfEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            cpfEntry.pack(padx=10, pady=10)
+            wageEntry=customtkinter.CTkEntry(mainFrame)
+            wageEntry.pack(padx=10, pady=10)
+            addressEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            addressEntry.pack(padx=10, pady=10)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton.pack(padx=10, pady=10)
+
+        elif var=="funcionário":
+            app.geometry("{}x{}+{}+{}".format(str(windowWidth),int(460),str(windowX),str(windowY)), )
+            nameEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            nameEntry.pack(padx=10, pady=10)
+            emailEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            emailEntry.pack(padx=10, pady=10)
+            cpfEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            cpfEntry.pack(padx=10, pady=10)
+            phoneEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            phoneEntry.pack(padx=10, pady=10)
+            wageEntry=customtkinter.CTkEntry(mainFrame)
+            wageEntry.pack(padx=10, pady=10)
+            daysEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            daysEntry.pack(padx=10, pady=10)
+            addressEntry=customtkinter.CTkEntry(mainFrame, width=300)
+            addressEntry.pack(padx=10, pady=10)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton.pack(padx=10, pady=10)
         
 
 
