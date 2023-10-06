@@ -5,6 +5,7 @@ from BEAN.bean import DB
 import CGV
 import hashlib
 from PIL import Image
+from datetime import datetime
 
 class App:
     db=DB()
@@ -129,9 +130,9 @@ class App:
     
     def HomeWindow(self):
 
-        def changeFrameTo(frame):
+        def changeFrameTo(frameFunc):
             self.now.grid_forget()
-            self.now=frame
+            self.now=frameFunc()
             self.now.grid(row=1, column=1, columnspan=2, pady=10, padx=10, sticky="snew")
 
         def change_appearance_mode_event(v):
@@ -169,141 +170,175 @@ class App:
         searchBar=customtkinter.CTkEntry(self.app, placeholder_text="Digite sua pesquisa")
         searchBar.grid(row=0, column=1, padx=10, pady=0, sticky="we")
         
+        def frame1Func():
         #configurações do frame de serviços
-        frame1=customtkinter.CTkFrame(self.app, width=600, height=600)
-        label1=customtkinter.CTkLabel(frame1, text="frame1", font=customtkinter.CTkFont(size=20, weight="bold"))
-        label1.grid(row=0, column=3, padx=20, pady=(20, 10))
+            frame1=customtkinter.CTkFrame(self.app, width=600, height=600)
+            frame1.grid_rowconfigure(1, weight=1)
+            frame1.grid_columnconfigure(0, weight=1)
+            label1=customtkinter.CTkLabel(frame1, text="Calendário de serviços", font=customtkinter.CTkFont(size=20, weight="bold"))
+            label1.grid(row=0, column=0, padx=20, pady=(20, 10))
+            tabview=customtkinter.CTkTabview(frame1, width=250)
+            tabview.grid(row=1, column=0, padx=10,pady=10, sticky="snew")
+            tabview.add("Consulta veterinária")
+            tabview.tab("Consulta veterinária").grid_rowconfigure((1,2,3,4,5), weight=1)
+            tabview.tab("Consulta veterinária").grid_columnconfigure((0,1,2,3,4,5,6), weight=1)
+            schedules=self.db.selectAll(self.db.SCHEDULES_TABLE)[:30]
+            rowStatus=[0,0,0,0,0,0,0]
+            for i in range(len(schedules)):
+                date=CGV.dec(schedules[i]["date"])
+                hour=CGV.dec(schedules[i]["hour"])
+                d=datetime(day=int(date.split("/")[0]), month=int(date.split("/")[1]), year=int(date.split("/")[2]))
+                rowStatus[d.weekday()]+=1
+                day=customtkinter.CTkFrame(tabview.tab("Consulta veterinária"), width=100, height=80)
+                day.grid(row=rowStatus[d.weekday()], column=d.weekday(), padx=10, pady=10, sticky="snew")
+                customtkinter.CTkLabel(day, text=f"Dia: {date}").grid(row=0, column=0, padx=10, pady=10)
+                customtkinter.CTkLabel(day, text=f"Horário: {hour}").grid(row=1, column=0, padx=10, pady=10)
+           
+            days = ["SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM"]
+            for i in range(len(days)):
+                customtkinter.CTkLabel(tabview.tab("Consulta veterinária"), text=days[i]).grid(row=0, column=i, padx=10, pady=10)
 
 
+            customtkinter.CTkButton(frame1, text="Agendar novo Serviço +", command=0).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+
+            return frame1
+
+        def frame2Func():
         #configurações do frame de compras
-        frame2=customtkinter.CTkFrame(self.app, width=600, height=600)
-        frame2.grid_columnconfigure((0, 1), weight=1)
-        frame2.grid_rowconfigure(1, weight=1)
-        label2=customtkinter.CTkLabel(frame2, text="Estoque", font=customtkinter.CTkFont(size=20, weight="bold"))
-        label2.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 10))
-        frameProdutos=customtkinter.CTkScrollableFrame(frame2, width=700, height=700)
-        frameProdutos.grid(row=1, column=0, columnspan=2, padx=20, pady=20, sticky="snew")
-        frameProdutos.grid_columnconfigure((0,1), weight=1)
-        products=self.db.selectAll(self.db.PRODUCTS_TABLE)
-        for i in range(len(products)):
-            p=products[i]
-            customtkinter.CTkLabel(frameProdutos, text=f"Nome: {CGV.dec(p['name'])} | Marca: {CGV.dec(p['brand'])} | QTD: {p['stock']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
-            customtkinter.CTkButton(frameProdutos, text="Cadastrar compra", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"), command=lambda:self.AddWindow("compra")).grid(row=i, column=1, padx=20, pady=10, sticky="e")
-            customtkinter.CTkButton(frameProdutos, text="EditarProduto", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        customtkinter.CTkButton(frame2, text="Adicionar novo item +", command=lambda:self.AddWindow("produto")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
-        customtkinter.CTkButton(frame2, text="Histórico de compras").grid(row=2, column=1, padx=20, pady=20, sticky="e")
+            frame2=customtkinter.CTkFrame(self.app, width=600, height=600)
+            frame2.grid_columnconfigure((0, 1), weight=1)
+            frame2.grid_rowconfigure(1, weight=1)
+            label2=customtkinter.CTkLabel(frame2, text="Estoque", font=customtkinter.CTkFont(size=20, weight="bold"))
+            label2.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 10))
+            frameProdutos=customtkinter.CTkScrollableFrame(frame2, width=700, height=700)
+            frameProdutos.grid(row=1, column=0, columnspan=2, padx=20, pady=20, sticky="snew")
+            frameProdutos.grid_columnconfigure((0,1), weight=1)
+            products=self.db.selectAll(self.db.PRODUCTS_TABLE)[:50]
+            for i in range(len(products)):
+                p=products[i]
+                customtkinter.CTkLabel(frameProdutos, text=f"Nome: {CGV.dec(p['name'])} | Marca: {CGV.dec(p['brand'])} | QTD: {p['stock']}", font=customtkinter.CTkFont(size=15, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
+                customtkinter.CTkButton(frameProdutos, text="Cadastrar compra", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"), command=lambda:self.AddWindow("compra")).grid(row=i, column=1, padx=20, pady=10, sticky="e")
+                customtkinter.CTkButton(frameProdutos, text="EditarProduto", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+            customtkinter.CTkButton(frame2, text="Adicionar novo item +", command=lambda:self.AddWindow("produto")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+            customtkinter.CTkButton(frame2, text="Histórico de compras").grid(row=2, column=1, padx=20, pady=20, sticky="e")
+            return frame2
         
-
+        def frame3Func():
         #configurações do frame de adoção
-        frame3=customtkinter.CTkFrame(self.app, width=600, height=600)
-        frame3.grid_columnconfigure(0, weight=1)
-        frame3.grid_rowconfigure(1, weight=1)
-        tab0 = customtkinter.CTkTabview(frame3, width=250)
-        tab0.grid(row=1, column=0, padx=10, pady=10, sticky="snew")
-        tab0.add("Pets")
-        tab0.tab("Pets").grid_rowconfigure(0, weight=1)
-        tab0.tab("Pets").grid_columnconfigure(0, weight=1)
-        tab0.add("Para adoção")
-        tab0.tab("Para adoção").grid_rowconfigure(0, weight=1)
-        tab0.tab("Para adoção").grid_columnconfigure(0, weight=1)
-        frameAdopt=customtkinter.CTkScrollableFrame(tab0.tab("Para adoção"))
-        frameAdopt.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
-        frameAdopt.grid_columnconfigure(0, weight=1)
-        adoptAnimals=self.db.selectAll(self.db.ANIMALS_TABLE, where="owner is null")
-        for i in range(len(adoptAnimals)):
-            a=adoptAnimals[i]
-            customtkinter.CTkLabel(frameAdopt, text=f"Nome: {CGV.dec(a['name'])} | Idade: {CGV.dec(a['age'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
-            customtkinter.CTkButton(frameAdopt, text="Cadastrar adoção", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=1, padx=20, pady=10, sticky="e")
-            customtkinter.CTkButton(frameAdopt, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        customtkinter.CTkButton(tab0.tab("Para adoção"), text="Adicionar novo animal +", command=lambda:self.AddWindow("animal para adoção")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
-        
-        frameAnimais=customtkinter.CTkScrollableFrame(tab0.tab("Pets"))
-        frameAnimais.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
-        frameAnimais.grid_columnconfigure(0, weight=1)
-        animals=self.db.selectAll(self.db.ANIMALS_TABLE, where="owner NOT NULL")
-        for i in range(len(animals)):
-            a=animals[i]
-            customtkinter.CTkLabel(frameAnimais, text=f"Nome: {CGV.dec(a['name'])} | Idade: {CGV.dec(a['age'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
-            customtkinter.CTkButton(frameAnimais, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        customtkinter.CTkButton(tab0.tab("Pets"), text="Adicionar novo animal +", command=lambda:self.AddWindow("animal")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
-        
+            frame3=customtkinter.CTkFrame(self.app, width=600, height=600)
+            frame3.grid_columnconfigure(0, weight=1)
+            frame3.grid_rowconfigure(1, weight=1)
+            tab0 = customtkinter.CTkTabview(frame3, width=250)
+            tab0.grid(row=1, column=0, padx=10, pady=10, sticky="snew")
+            tab0.add("Pets")
+            tab0.tab("Pets").grid_rowconfigure(0, weight=1)
+            tab0.tab("Pets").grid_columnconfigure(0, weight=1)
+            tab0.add("Para adoção")
+            tab0.tab("Para adoção").grid_rowconfigure(0, weight=1)
+            tab0.tab("Para adoção").grid_columnconfigure(0, weight=1)
+            frameAdopt=customtkinter.CTkScrollableFrame(tab0.tab("Para adoção"))
+            frameAdopt.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
+            frameAdopt.grid_columnconfigure(0, weight=1)
+            adoptAnimals=self.db.selectAll(self.db.ANIMALS_TABLE, where="owner is null")[:50]
+            for i in range(len(adoptAnimals)):
+                a=adoptAnimals[i]
+                customtkinter.CTkLabel(frameAdopt, text=f"Nome: {CGV.dec(a['name'])} | Idade: {CGV.dec(a['age'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
+                customtkinter.CTkButton(frameAdopt, text="Cadastrar adoção", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=1, padx=20, pady=10, sticky="e")
+                customtkinter.CTkButton(frameAdopt, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+            customtkinter.CTkButton(tab0.tab("Para adoção"), text="Adicionar novo animal +", command=lambda:self.AddWindow("animal para adoção")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+            
+            frameAnimais=customtkinter.CTkScrollableFrame(tab0.tab("Pets"))
+            frameAnimais.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
+            frameAnimais.grid_columnconfigure(0, weight=1)
+            animals=self.db.selectAll(self.db.ANIMALS_TABLE, where="owner NOT NULL")[:50]
+            for i in range(len(animals)):
+                a=animals[i]
+                customtkinter.CTkLabel(frameAnimais, text=f"Nome: {CGV.dec(a['name'])} | Idade: {CGV.dec(a['age'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
+                customtkinter.CTkButton(frameAnimais, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+            customtkinter.CTkButton(tab0.tab("Pets"), text="Adicionar novo animal +", command=lambda:self.AddWindow("animal")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+            return frame3
+
+        def frame4Func():
         #configurações do frame de cadastros
-        frame4=customtkinter.CTkFrame(self.app, width=600, height=600)
-        frame4.grid_columnconfigure(0, weight=1)
-        frame4.grid_rowconfigure(1, weight=1)
-        tab = customtkinter.CTkTabview(frame4, width=250)
-        tab.grid(row=1, column=0, padx=10, pady=10, sticky="snew")
-        tab.add("Clientes")
-        tab.tab("Clientes").grid_rowconfigure(0, weight=1)
-        tab.tab("Clientes").grid_columnconfigure(0, weight=1)
-        tab.add("Fornecedores")
-        tab.tab("Fornecedores").grid_rowconfigure(0, weight=1)
-        tab.tab("Fornecedores").grid_columnconfigure(0, weight=1)
-        frameClientes=customtkinter.CTkScrollableFrame(tab.tab("Clientes"))
-        frameClientes.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
-        frameClientes.grid_columnconfigure(0, weight=1)
-        clients=self.db.selectAll(self.db.CLIENTS_TABLE)
-        for i in range(len(clients)):
-            c=clients[i]
-            customtkinter.CTkLabel(frameClientes, text=f"Nome: {CGV.dec(c['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
-            customtkinter.CTkButton(frameClientes, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        
-        frameFornecedores=customtkinter.CTkScrollableFrame(tab.tab("Fornecedores"))
-        frameFornecedores.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
-        frameFornecedores.grid_columnconfigure(0, weight=1)
-        suppliers=self.db.selectAll(self.db.SUPPLIERS_TABLE)
-        for i in range(len(suppliers)):
-            s=suppliers[i]
-            customtkinter.CTkLabel(frameFornecedores, text=f"Nome: {CGV.dec(s['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
-            customtkinter.CTkButton(frameFornecedores, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        customtkinter.CTkButton(tab.tab("Clientes"), text="Adicionar novo cliente +", command=lambda:self.AddWindow("cliente")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
-        customtkinter.CTkButton(tab.tab("Fornecedores"), text="Adicionar novo fornecedor +", command=lambda:self.AddWindow("fornecedor")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+            frame4=customtkinter.CTkFrame(self.app, width=600, height=600)
+            frame4.grid_columnconfigure(0, weight=1)
+            frame4.grid_rowconfigure(1, weight=1)
+            tab = customtkinter.CTkTabview(frame4, width=250)
+            tab.grid(row=1, column=0, padx=10, pady=10, sticky="snew")
+            tab.add("Clientes")
+            tab.tab("Clientes").grid_rowconfigure(0, weight=1)
+            tab.tab("Clientes").grid_columnconfigure(0, weight=1)
+            tab.add("Fornecedores")
+            tab.tab("Fornecedores").grid_rowconfigure(0, weight=1)
+            tab.tab("Fornecedores").grid_columnconfigure(0, weight=1)
+            frameClientes=customtkinter.CTkScrollableFrame(tab.tab("Clientes"))
+            frameClientes.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
+            frameClientes.grid_columnconfigure(0, weight=1)
+            clients=self.db.selectAll(self.db.CLIENTS_TABLE)[:50]
+            for i in range(len(clients)):
+                c=clients[i]
+                customtkinter.CTkLabel(frameClientes, text=f"Nome: {CGV.dec(c['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
+                customtkinter.CTkButton(frameClientes, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+            
+            frameFornecedores=customtkinter.CTkScrollableFrame(tab.tab("Fornecedores"))
+            frameFornecedores.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
+            frameFornecedores.grid_columnconfigure(0, weight=1)
+            suppliers=self.db.selectAll(self.db.SUPPLIERS_TABLE)[:50]
+            for i in range(len(suppliers)):
+                s=suppliers[i]
+                customtkinter.CTkLabel(frameFornecedores, text=f"Nome: {CGV.dec(s['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
+                customtkinter.CTkButton(frameFornecedores, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+            customtkinter.CTkButton(tab.tab("Clientes"), text="Adicionar novo cliente +", command=lambda:self.AddWindow("cliente")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+            customtkinter.CTkButton(tab.tab("Fornecedores"), text="Adicionar novo fornecedor +", command=lambda:self.AddWindow("fornecedor")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+            return frame4
 
-        #configurações do frame da equipe
-        frame5=customtkinter.CTkFrame(self.app, width=600, height=600)
-        frame5.grid_columnconfigure(0, weight=1)
-        frame5.grid_rowconfigure(1, weight=1)
-        tab2 = customtkinter.CTkTabview(frame5, width=250)
-        tab2.grid(row=1, column=0, padx=10, pady=10, sticky="snew")
-        tab2.add("Funcionários")
-        tab2.tab("Funcionários").grid_rowconfigure(0, weight=1)
-        tab2.tab("Funcionários").grid_columnconfigure(0, weight=1)
-        tab2.add("Veterinários")
-        tab2.tab("Veterinários").grid_rowconfigure(0, weight=1)
-        tab2.tab("Veterinários").grid_columnconfigure(0, weight=1)
-        frameFunc=customtkinter.CTkScrollableFrame(tab2.tab("Funcionários"))
-        frameFunc.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
-        frameFunc.grid_columnconfigure(0, weight=1)
-        employees=self.db.selectAll(self.db.EMPLOYEES_TABLE)
-        for i in range(len(employees)):
-            e=employees[i]
-            customtkinter.CTkLabel(frameFunc, text=f"Nome: {CGV.dec(e['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
-            customtkinter.CTkButton(frameFunc, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        
-        frameVet=customtkinter.CTkScrollableFrame(tab2.tab("Veterinários"))
-        frameVet.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
-        frameVet.grid_columnconfigure(0, weight=1)
-        veterinarians=self.db.selectAll(self.db.VETERINARIANS_TABLE)
-        for i in range(len(veterinarians)):
-            v=veterinarians[i]
-            customtkinter.CTkLabel(frameVet, text=f"Nome: {CGV.dec(v['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
-            customtkinter.CTkButton(frameVet, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        customtkinter.CTkButton(tab2.tab("Funcionários"), text="Adicionar novo funcionário +", command=lambda:self.AddWindow("funcionário")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
-        customtkinter.CTkButton(tab2.tab("Veterinários"), text="Adicionar novo veterinário +", command=lambda:self.AddWindow("veterinário")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        def frame5Func():
+            #configurações do frame da equipe
+            frame5=customtkinter.CTkFrame(self.app, width=600, height=600)
+            frame5.grid_columnconfigure(0, weight=1)
+            frame5.grid_rowconfigure(1, weight=1)
+            tab2 = customtkinter.CTkTabview(frame5, width=250)
+            tab2.grid(row=1, column=0, padx=10, pady=10, sticky="snew")
+            tab2.add("Funcionários")
+            tab2.tab("Funcionários").grid_rowconfigure(0, weight=1)
+            tab2.tab("Funcionários").grid_columnconfigure(0, weight=1)
+            tab2.add("Veterinários")
+            tab2.tab("Veterinários").grid_rowconfigure(0, weight=1)
+            tab2.tab("Veterinários").grid_columnconfigure(0, weight=1)
+            frameFunc=customtkinter.CTkScrollableFrame(tab2.tab("Funcionários"))
+            frameFunc.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
+            frameFunc.grid_columnconfigure(0, weight=1)
+            employees=self.db.selectAll(self.db.EMPLOYEES_TABLE)[:50]
+            for i in range(len(employees)):
+                e=employees[i]
+                customtkinter.CTkLabel(frameFunc, text=f"Nome: {CGV.dec(e['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
+                customtkinter.CTkButton(frameFunc, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+            
+            frameVet=customtkinter.CTkScrollableFrame(tab2.tab("Veterinários"))
+            frameVet.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
+            frameVet.grid_columnconfigure(0, weight=1)
+            veterinarians=self.db.selectAll(self.db.VETERINARIANS_TABLE)[:50]
+            for i in range(len(veterinarians)):
+                v=veterinarians[i]
+                customtkinter.CTkLabel(frameVet, text=f"Nome: {CGV.dec(v['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
+                customtkinter.CTkButton(frameVet, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
+            customtkinter.CTkButton(tab2.tab("Funcionários"), text="Adicionar novo funcionário +", command=lambda:self.AddWindow("funcionário")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+            customtkinter.CTkButton(tab2.tab("Veterinários"), text="Adicionar novo veterinário +", command=lambda:self.AddWindow("veterinário")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+            return frame5
 
-        self.now=frame1
+        self.now=frame1Func()
         self.now.grid(row=1, column=1, columnspan=2, pady=10, padx=10, sticky="snew")
 
         #configurações do frame lateral
-        leftFrame_button1=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=calendarIcon, command=lambda:changeFrameTo(frame1))
+        leftFrame_button1=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=calendarIcon, command=lambda:changeFrameTo(frame1Func))
         leftFrame_button1.grid(row=0, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button2=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=cartIcon, command=lambda:changeFrameTo(frame2))
+        leftFrame_button2=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=cartIcon, command=lambda:changeFrameTo(frame2Func))
         leftFrame_button2.grid(row=1, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button3=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=adoptIcon, command=lambda:changeFrameTo(frame3))
+        leftFrame_button3=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=adoptIcon, command=lambda:changeFrameTo(frame3Func))
         leftFrame_button3.grid(row=2, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button4=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=clientsIcon, command=lambda:changeFrameTo(frame4))
+        leftFrame_button4=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=clientsIcon, command=lambda:changeFrameTo(frame4Func))
         leftFrame_button4.grid(row=3, column=0, padx=10, pady=10, sticky="n")
-        leftFrame_button5=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=employeesIcon, command=lambda:changeFrameTo(frame5))
+        leftFrame_button5=customtkinter.CTkButton(leftFrame, width=80, height=80, text="", image=employeesIcon, command=lambda:changeFrameTo(frame5Func))
         leftFrame_button5.grid(row=4, column=0, padx=10, pady=10, sticky="n")
         appearance_mode_label=customtkinter.CTkLabel(leftFrame, text="Appearance Mode:", anchor="w")
         appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0), sticky="n")
@@ -383,7 +418,7 @@ class App:
                     self.db.execute(f"INSERT INTO {self.db.CLIENTS_TABLE} (name, email, cpf, phone, address) VALUES ('{name}','{email}','{cpf}','{phone}','{address}')")
                     messagebox.showinfo("Sucesso", "Cliente adicionado com sucesso!")
                     app.destroy()
-                    self.goto(self.HomeWindow)
+                    
                 except:
                     messagebox.showinfo("Erro", "Erro ao adicionar cliente, talvez cliente já exista")
 
@@ -422,7 +457,7 @@ class App:
                     self.db.execute(f"INSERT INTO {self.db.ANIMALS_TABLE} (name, age, type, owner) VALUES ('{name}','{age}','{typeBox.get().strip()}',{owner})")
                     messagebox.showinfo("Sucesso", "Animal adicionado com sucesso!")
                     app.destroy()
-                    self.goto(self.HomeWindow)
+                    
                 except:
                     messagebox.showinfo("Erro", "Erro ao adicionar animal, talvez animal já exista")
             atribs=[]
@@ -455,7 +490,7 @@ class App:
                     self.db.execute(f"INSERT INTO {self.db.ANIMALS_TABLE} (name, age, type, owner) VALUES ('{name}','{age}','{typeBox.get().strip()}', {owner})")
                     messagebox.showinfo("Sucesso", "Animal adicionado com sucesso!")
                     app.destroy()
-                    self.goto(self.HomeWindow)
+                    
                 except:
                     messagebox.showinfo("Erro", "Erro ao adicionar animal, talvez animal já exista")
             atribs=[]
@@ -492,7 +527,7 @@ class App:
                     self.db.execute(f"INSERT INTO {self.db.PRODUCTS_TABLE} (name, price, brand, stock, description, supplier) VALUES ('{name}',{price},'{brand}',{stock},'{description}',{supplier})")
                     messagebox.showinfo("Sucesso", "Produto adicionado com sucesso!")
                     app.destroy()
-                    self.goto(self.HomeWindow)
+                    
                 except:
                     messagebox.showinfo("Erro", "Erro ao adicionar produto, talvez produto já exista")
             atribs=[]
@@ -534,7 +569,7 @@ class App:
                     self.db.execute(f"INSERT INTO {self.db.SUPPLIERS_TABLE} (name, address, phone, email, cnpj) VALUES ('{name}','{address}','{phone}','{email}','{cnpj}')")
                     messagebox.showinfo("Sucesso", "Fornecedor adicionado com sucesso!")
                     app.destroy()
-                    self.goto(self.HomeWindow)
+                    
                 except:
                     messagebox.showinfo("Erro", "Erro ao adicionar fornecedor, talvez fornecedor já exista")
             atribs=[]
@@ -574,7 +609,7 @@ class App:
                     self.db.execute(f"INSERT INTO {self.db.VETERINARIANS_TABLE} (name, phone, email, cpf, wage, address) VALUES ('{name}', '{phone}', '{email}', '{cpf}', {wage}, '{address}')")
                     messagebox.showinfo("Sucesso", "Veterinário adicionado com sucesso!")
                     app.destroy()
-                    self.goto(self.HomeWindow)
+                    
                 except:
                     messagebox.showinfo("Erro", "Erro ao adicionar veterinário, talvez o veterianário já exista")
 
@@ -620,7 +655,7 @@ class App:
                     self.db.execute(f"INSERT INTO {self.db.EMPLOYEES_TABLE} (name, email, cpf, phone, wage, office, hired_day, address) VALUES ('{name}', '{email}', '{cpf}', '{phone}', {wage}, '{office}', '{days}', '{address}')")
                     messagebox.showinfo("Sucesso", "Funcionário adicionado com sucesso!")
                     app.destroy()
-                    self.goto(self.HomeWindow)
+                    
                 except:
                     messagebox.showinfo("Erro", "Erro ao adicionar funcionário, talvez o funcionário já exista")
 
@@ -652,7 +687,6 @@ class App:
             atribs.append(wageEntry)
             atribs.append(daysEntry)
             atribs.append(addressEntry)
-
 
         app.mainloop()
 
