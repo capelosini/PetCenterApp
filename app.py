@@ -34,7 +34,7 @@ class App:
             messagebox.showinfo("Erro", "Username precisa ter até 20 caracteres e não ter espaços!")
             return False
         try:
-            self.db.insert(self.db.USERS_TABLE, {"fullname": fullname, "username": username.lower(), "password": hashlib.sha256(password.encode()).hexdigest()})
+            self.db.insert(self.db.USERS_TABLE, {"fullname": CGV.enc(fullname), "username": CGV.enc(username.lower()), "password": hashlib.sha256(password.encode()).hexdigest()})
             self.goto(self.LoginWindow)
         except:
             messagebox.showinfo("Erro", "Usuário já existe!")
@@ -44,7 +44,7 @@ class App:
         if not username.strip() or not password.strip():
             messagebox.showinfo("Erro", "Preencha todos os campos!")
             return False
-        users=self.db.selectAll(self.db.USERS_TABLE, f"username='{username.lower()}' AND password='{hashlib.sha256(password.encode()).hexdigest()}'")
+        users=self.db.selectAll(self.db.USERS_TABLE, f"username='{CGV.enc(username.lower())}' AND password='{hashlib.sha256(password.encode()).hexdigest()}'")
         if users:
             self.user=users[0]
             self.goto(self.HomeWindow)
@@ -123,6 +123,8 @@ class App:
         gotoLoginButton=customtkinter.CTkButton(master=mainFrame, text="Fazer Login", width=20, command=lambda:self.goto(self.LoginWindow))
         gotoLoginButton.pack(pady=20, padx=15, side="right")
 
+        self.app.bind("<Return>", lambda e:self.register(fullname.get(), username.get(), password.get()))
+
         self.app.mainloop()
     
     def HomeWindow(self):
@@ -185,7 +187,7 @@ class App:
         products=self.db.selectAll(self.db.PRODUCTS_TABLE)
         for i in range(len(products)):
             p=products[i]
-            customtkinter.CTkLabel(frameProdutos, text=f"Nome: {p['name']} | Marca: {p['brand']} | QTD: {p['stock']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkLabel(frameProdutos, text=f"Nome: {CGV.dec(p['name'])} | Marca: {CGV.dec(p['brand'])} | QTD: {p['stock']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
             customtkinter.CTkButton(frameProdutos, text="Cadastrar compra", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"), command=lambda:self.AddWindow("compra")).grid(row=i, column=1, padx=20, pady=10, sticky="e")
             customtkinter.CTkButton(frameProdutos, text="EditarProduto", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
         customtkinter.CTkButton(frame2, text="Adicionar novo item +", command=lambda:self.AddWindow("produto")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
@@ -210,18 +212,18 @@ class App:
         adoptAnimals=self.db.selectAll(self.db.ANIMALS_TABLE, where="owner is null")
         for i in range(len(adoptAnimals)):
             a=adoptAnimals[i]
-            customtkinter.CTkLabel(frameAdopt, text=f"Nome: {a['name']} | Idade: {a['age']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkLabel(frameAdopt, text=f"Nome: {CGV.dec(a['name'])} | Idade: {CGV.dec(a['age'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
             customtkinter.CTkButton(frameAdopt, text="Cadastrar adoção", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=1, padx=20, pady=10, sticky="e")
             customtkinter.CTkButton(frameAdopt, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
-        customtkinter.CTkButton(tab0.tab("Para adoção"), text="Adicionar novo animal +", command=lambda:self.AddWindow("animal")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
+        customtkinter.CTkButton(tab0.tab("Para adoção"), text="Adicionar novo animal +", command=lambda:self.AddWindow("animal para adoção")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
         
         frameAnimais=customtkinter.CTkScrollableFrame(tab0.tab("Pets"))
         frameAnimais.grid(row=0, column=0, padx=20, pady=20, sticky="snew")
         frameAnimais.grid_columnconfigure(0, weight=1)
-        animals=self.db.selectAll(self.db.ANIMALS_TABLE)
-        for i in range(len(adoptAnimals)):
+        animals=self.db.selectAll(self.db.ANIMALS_TABLE, where="owner NOT NULL")
+        for i in range(len(animals)):
             a=animals[i]
-            customtkinter.CTkLabel(frameAnimais, text=f"Nome: {a['name']} | Idade: {a['age']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkLabel(frameAnimais, text=f"Nome: {CGV.dec(a['name'])} | Idade: {CGV.dec(a['age'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
             customtkinter.CTkButton(frameAnimais, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
         customtkinter.CTkButton(tab0.tab("Pets"), text="Adicionar novo animal +", command=lambda:self.AddWindow("animal")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
         
@@ -243,7 +245,7 @@ class App:
         clients=self.db.selectAll(self.db.CLIENTS_TABLE)
         for i in range(len(clients)):
             c=clients[i]
-            customtkinter.CTkLabel(frameClientes, text=f"Nome: {c['name']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkLabel(frameClientes, text=f"Nome: {CGV.dec(c['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
             customtkinter.CTkButton(frameClientes, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
         
         frameFornecedores=customtkinter.CTkScrollableFrame(tab.tab("Fornecedores"))
@@ -252,7 +254,7 @@ class App:
         suppliers=self.db.selectAll(self.db.SUPPLIERS_TABLE)
         for i in range(len(suppliers)):
             s=suppliers[i]
-            customtkinter.CTkLabel(frameFornecedores, text=f"Nome: {s['name']}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkLabel(frameFornecedores, text=f"Nome: {CGV.dec(s['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
             customtkinter.CTkButton(frameFornecedores, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
         customtkinter.CTkButton(tab.tab("Clientes"), text="Adicionar novo cliente +", command=lambda:self.AddWindow("cliente")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
         customtkinter.CTkButton(tab.tab("Fornecedores"), text="Adicionar novo fornecedor +", command=lambda:self.AddWindow("fornecedor")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
@@ -275,7 +277,7 @@ class App:
         employees=self.db.selectAll(self.db.EMPLOYEES_TABLE)
         for i in range(len(employees)):
             e=employees[i]
-            customtkinter.CTkLabel(frameFunc, text=f"Nome: {e[i]}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkLabel(frameFunc, text=f"Nome: {CGV.dec(e['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
             customtkinter.CTkButton(frameFunc, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
         
         frameVet=customtkinter.CTkScrollableFrame(tab2.tab("Veterinários"))
@@ -284,7 +286,7 @@ class App:
         veterinarians=self.db.selectAll(self.db.VETERINARIANS_TABLE)
         for i in range(len(veterinarians)):
             v=veterinarians[i]
-            customtkinter.CTkLabel(frameVet, text=f"Nome: {v[i]}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10)
+            customtkinter.CTkLabel(frameVet, text=f"Nome: {CGV.dec(v['name'])}", font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=i, column=0, padx=20, pady=10, sticky="w")
             customtkinter.CTkButton(frameVet, text="Editar perfil", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE")).grid(row=i, column=2, padx=20, pady=10, sticky="e")
         customtkinter.CTkButton(tab2.tab("Funcionários"), text="Adicionar novo funcionário +", command=lambda:self.AddWindow("funcionário")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
         customtkinter.CTkButton(tab2.tab("Veterinários"), text="Adicionar novo veterinário +", command=lambda:self.AddWindow("veterinário")).grid(row=2, column=0, padx=20, pady=20, sticky="w")
@@ -322,13 +324,13 @@ class App:
             app.destroy()
             self.goto(self.LoginWindow)
 
-        windowWidth=200
+        windowWidth=365
         windowHeight=200
         windowX=round(screenSize()[0]/2-windowWidth/2)
         windowY=round(screenSize()[1]/2-windowHeight/2)
 
         app = customtkinter.CTk()
-        app.geometry("{}x{}+{}+{}".format(str(windowWidth),str(windowHeight),str(windowX+500),str(windowY-240)), )
+        app.geometry("{}x{}+{}+{}".format(str(windowWidth),str(windowHeight),str(windowX+400),str(windowY-240)))
         app.title("Conta")
         app.iconbitmap("imgs/icon.ico")
 
@@ -336,6 +338,12 @@ class App:
 
         mainFrame=customtkinter.CTkFrame(app, width=180, height=100)
         mainFrame.grid(row=0, column=0, padx=10, pady=10, sticky="snew")
+        mainFrame.grid_columnconfigure(1,weight=1)
+        mainFrame.grid_rowconfigure(0, weight=1)
+        profilePicFrame=customtkinter.CTkFrame(mainFrame, width=100, height=100, corner_radius=100)
+        profilePicFrame.grid(row=0, column=0, rowspan=2, padx=10, pady=10)
+        customtkinter.CTkLabel(mainFrame, text=f"Usuário: {CGV.dec(self.user['username'])[:10]}", font=customtkinter.CTkFont(size=20, weight="bold"), width=180).grid(row=0, column=1, padx=10, pady=10, sticky="w")
+        customtkinter.CTkLabel(mainFrame, text=f"Nome: {CGV.dec(self.user['fullname']).split(' ')[0]}").grid(row=1, column=1, padx=10, pady=10, sticky="w") 
         logoutButton=customtkinter.CTkButton(app, width=180, height=50, text="Sair", command=exitBTN)
         logoutButton.grid(row=1, column=0, sticky="snew")
 
@@ -359,9 +367,30 @@ class App:
         titleLabel.pack(padx=10, pady=10)
 
         if var =="cliente":
+            def add():
+                for i in atribs: 
+                    if i.get().strip() == "": return messagebox.showinfo("Erro", "Preencha todos os campos!")
+
+                name=CGV.enc(nameEntry.get().strip())
+                email=CGV.enc(emailEntry.get().strip())
+                cpf=CGV.enc(cpfEntry.get().strip())
+                phone=CGV.enc(phoneEntry.get().strip())
+                address=CGV.enc(addressEntry.get().strip().title())
+
+                if len(cpf) != 11: return messagebox.showinfo("Erro", "CPF inválido")
+
+                try:
+                    self.db.execute(f"INSERT INTO {self.db.CLIENTS_TABLE} (name, email, cpf, phone, address) VALUES ('{name}','{email}','{cpf}','{phone}','{address}')")
+                    messagebox.showinfo("Sucesso", "Cliente adicionado com sucesso!")
+                    app.destroy()
+                    self.goto(self.HomeWindow)
+                except:
+                    messagebox.showinfo("Erro", "Erro ao adicionar cliente, talvez cliente já exista")
+
+            atribs=[]
             nameEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Nome")
             nameEntry.pack(padx=10, pady=10)
-            emailEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="email")
+            emailEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Email")
             emailEntry.pack(padx=10, pady=10)
             cpfEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="CPF")
             cpfEntry.pack(padx=10, pady=10)
@@ -369,13 +398,37 @@ class App:
             phoneEntry.pack(padx=10, pady=10)
             addressEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Endereço")
             addressEntry.pack(padx=10, pady=10)
-            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=add)
             addButton.pack(padx=10, pady=10)
+            atribs.append(nameEntry)
+            atribs.append(emailEntry)
+            atribs.append(cpfEntry)
+            atribs.append(phoneEntry)
+            atribs.append(addressEntry)
 
         elif var =="animal":
+            def add():
+                for i in atribs: 
+                    if i.get().strip() == "": return messagebox.showinfo("Erro", "Preencha todos os campos!")
+
+                name=CGV.enc(nameEntry.get().strip())
+                age=CGV.enc(ageEntry.get().strip())
+                owner=CGV.enc(ownerEntry.get().strip())
+                clients=self.db.selectAll(self.db.CLIENTS_TABLE, where=f"cpf={owner}")
+                if not clients:
+                    return messagebox.showinfo("Erro", "Dono do animal não existe")
+                owner=str(clients[0]["clientID"])
+                try:
+                    self.db.execute(f"INSERT INTO {self.db.ANIMALS_TABLE} (name, age, type, owner) VALUES ('{name}','{age}','{typeBox.get().strip()}',{owner})")
+                    messagebox.showinfo("Sucesso", "Animal adicionado com sucesso!")
+                    app.destroy()
+                    self.goto(self.HomeWindow)
+                except:
+                    messagebox.showinfo("Erro", "Erro ao adicionar animal, talvez animal já exista")
+            atribs=[]
             nameEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Nome")
             nameEntry.pack(padx=10, pady=10)
-            ownerEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Dono do animal")
+            ownerEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Dono(CPF) do animal")
             ownerEntry.pack(padx=10, pady=10)
             ageEntry=customtkinter.CTkEntry(mainFrame, placeholder_text="Idade")
             ageEntry.pack(padx=10, pady=10)
@@ -383,10 +436,66 @@ class App:
             typeLabel.pack(padx=10, pady=(10,0))
             typeBox=customtkinter.CTkComboBox(mainFrame, values=["Cachorro", "Gato", "Hamster", "Peixe", "Pássaro"])
             typeBox.pack(padx=10, pady=10)
-            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=add)
             addButton.pack(padx=10, pady=10)
+            atribs.append(nameEntry)
+            atribs.append(ageEntry)
+            atribs.append(typeBox)
+            atribs.append(ownerEntry)
+
+        elif var =="animal para adoção":
+            def add():
+                for i in atribs: 
+                    if i.get().strip() == "": return messagebox.showinfo("Erro", "Preencha todos os campos!")
+
+                name=CGV.enc(nameEntry.get().strip())
+                age=CGV.enc(ageEntry.get().strip())
+                owner="NULL"
+                try:
+                    self.db.execute(f"INSERT INTO {self.db.ANIMALS_TABLE} (name, age, type, owner) VALUES ('{name}','{age}','{typeBox.get().strip()}', {owner})")
+                    messagebox.showinfo("Sucesso", "Animal adicionado com sucesso!")
+                    app.destroy()
+                    self.goto(self.HomeWindow)
+                except:
+                    messagebox.showinfo("Erro", "Erro ao adicionar animal, talvez animal já exista")
+            atribs=[]
+            nameEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Nome")
+            nameEntry.pack(padx=10, pady=10)
+            ageEntry=customtkinter.CTkEntry(mainFrame, placeholder_text="Idade")
+            ageEntry.pack(padx=10, pady=10)
+            typeLabel=customtkinter.CTkLabel(mainFrame, text="Espécie do animal:")
+            typeLabel.pack(padx=10, pady=(10,0))
+            typeBox=customtkinter.CTkComboBox(mainFrame, values=["Cachorro", "Gato", "Hamster", "Peixe", "Pássaro"])
+            typeBox.pack(padx=10, pady=10)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=add)
+            addButton.pack(padx=10, pady=10)
+            atribs.append(nameEntry)
+            atribs.append(ageEntry)
+            atribs.append(typeBox)
 
         elif var =="produto":
+            def add():
+                for i in atribs: 
+                    if i.get().strip() == "": return messagebox.showinfo("Erro", "Preencha todos os campos!")
+
+                name=CGV.enc(nameEntry.get().strip())
+                price=priceEntry.get().strip().replace(",", ".")
+                brand=CGV.enc(brandEntry.get().strip())
+                stock=stockEntry.get().strip()
+                description=CGV.enc(descriptionEntry.get().strip())
+                supplier=CGV.enc(supplierEntry.get().strip())
+                suppliers=self.db.selectAll(self.db.SUPPLIERS_TABLE, where=f"cnpj='{supplier}'")
+                if suppliers: supplier=str(suppliers[0]["supplierID"])
+                else: return messagebox.showinfo("Erro", "Fornecedor não existe")
+                
+                try:
+                    self.db.execute(f"INSERT INTO {self.db.PRODUCTS_TABLE} (name, price, brand, stock, description, supplier) VALUES ('{name}',{price},'{brand}',{stock},'{description}',{supplier})")
+                    messagebox.showinfo("Sucesso", "Produto adicionado com sucesso!")
+                    app.destroy()
+                    self.goto(self.HomeWindow)
+                except:
+                    messagebox.showinfo("Erro", "Erro ao adicionar produto, talvez produto já exista")
+            atribs=[]
             nameEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Nome")
             nameEntry.pack(padx=10, pady=10)
             priceEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Preço")
@@ -397,31 +506,84 @@ class App:
             stockEntry.pack(padx=10, pady=10)
             descriptionEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Descrição")
             descriptionEntry.pack(padx=10, pady=10)
-            supplierEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Fornecedor")
+            supplierEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Fornecedor(CNPJ)")
             supplierEntry.pack(padx=10, pady=10)
-            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=add)
             addButton.pack(padx=10, pady=10)
+            atribs.append(nameEntry)
+            atribs.append(priceEntry)
+            atribs.append(brandEntry)
+            atribs.append(stockEntry)
+            atribs.append(descriptionEntry)
+            atribs.append(supplierEntry)
 
         elif var =="fornecedor":
+            def add():
+                for i in atribs: 
+                    if i.get().strip() == "": return messagebox.showinfo("Erro", "Preencha todos os campos!")
+
+                name=CGV.enc(nameEntry.get().strip())
+                address=CGV.enc(addressEntry.get().strip())
+                phone=CGV.enc(phoneEntry.get().strip())
+                email=CGV.enc(emailEntry.get().strip())
+                cnpj=CGV.enc(cnpjEntry.get().strip())
+
+                if len(cnpj) != 14: return messagebox.showinfo("Erro", "CNPJ inválido")
+                
+                try:
+                    self.db.execute(f"INSERT INTO {self.db.SUPPLIERS_TABLE} (name, address, phone, email, cnpj) VALUES ('{name}','{address}','{phone}','{email}','{cnpj}')")
+                    messagebox.showinfo("Sucesso", "Fornecedor adicionado com sucesso!")
+                    app.destroy()
+                    self.goto(self.HomeWindow)
+                except:
+                    messagebox.showinfo("Erro", "Erro ao adicionar fornecedor, talvez fornecedor já exista")
+            atribs=[]
             nameEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Nome")
             nameEntry.pack(padx=10, pady=10)
             addressEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Endereço")
             addressEntry.pack(padx=10, pady=10)
             phoneEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Telefone")
             phoneEntry.pack(padx=10, pady=10)
-            emailEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="email")
+            emailEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Email")
             emailEntry.pack(padx=10, pady=10)
             cnpjEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="CNPJ")
             cnpjEntry.pack(padx=10, pady=10)
-            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=add)
             addButton.pack(padx=10, pady=10)
+            atribs.append(nameEntry)
+            atribs.append(addressEntry)
+            atribs.append(phoneEntry)
+            atribs.append(emailEntry)
+            atribs.append(cnpjEntry)
 
         elif var=="veterinário":
+            def add():
+                for i in atribs: 
+                    if i.get().strip() == "": return messagebox.showinfo("Erro", "Preencha todos os campos!")
+
+                name=CGV.enc(nameEntry.get().strip())
+                phone=CGV.enc(phoneEntry.get().strip())
+                email=CGV.enc(emailEntry.get().strip())
+                cpf=CGV.enc(cpfEntry.get().strip())
+                wage=wageEntry.get().strip().replace(",", ".")
+                address=CGV.enc(addressEntry.get().strip())
+
+                if len(cpf) != 11: return messagebox.showinfo("Erro", "CPF inválido")
+                
+                try:
+                    self.db.execute(f"INSERT INTO {self.db.VETERINARIANS_TABLE} (name, phone, email, cpf, wage, address) VALUES ('{name}', '{phone}', '{email}', '{cpf}', {wage}, '{address}')")
+                    messagebox.showinfo("Sucesso", "Veterinário adicionado com sucesso!")
+                    app.destroy()
+                    self.goto(self.HomeWindow)
+                except:
+                    messagebox.showinfo("Erro", "Erro ao adicionar veterinário, talvez o veterianário já exista")
+
+            atribs=[]
             nameEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Nome")
             nameEntry.pack(padx=10, pady=10)
             phoneEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Telefone")
             phoneEntry.pack(padx=10, pady=10)
-            emailEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="email")
+            emailEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Email")
             emailEntry.pack(padx=10, pady=10)
             cpfEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="CPF")
             cpfEntry.pack(padx=10, pady=10)
@@ -429,14 +591,45 @@ class App:
             wageEntry.pack(padx=10, pady=10)
             addressEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Endereço")
             addressEntry.pack(padx=10, pady=10)
-            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=add)
             addButton.pack(padx=10, pady=10)
+            atribs.append(nameEntry)
+            atribs.append(phoneEntry)
+            atribs.append(emailEntry)
+            atribs.append(cpfEntry)
+            atribs.append(wageEntry)
+            atribs.append(addressEntry)
 
         elif var=="funcionário":
-            app.geometry("{}x{}+{}+{}".format(str(windowWidth),int(460),str(windowX),str(windowY)), )
+            def add():
+                for i in atribs: 
+                    if i.get().strip() == "": return messagebox.showinfo("Erro", "Preencha todos os campos!")
+
+                name=CGV.enc(nameEntry.get().strip())
+                email=CGV.enc(emailEntry.get().strip())
+                cpf=CGV.enc(cpfEntry.get().strip())
+                phone=CGV.enc(phoneEntry.get().strip())
+                wage=wageEntry.get().strip().replace(",", ".")
+                office=CGV.enc(officeEntry.get().strip())
+                days=CGV.enc(daysEntry.get().strip())
+                address=CGV.enc(addressEntry.get().strip())
+
+                if len(cpf) != 11: return messagebox.showinfo("Erro", "CPF inválido")
+
+                try:
+                    self.db.execute(f"INSERT INTO {self.db.EMPLOYEES_TABLE} (name, email, cpf, phone, wage, office, hired_day, address) VALUES ('{name}', '{email}', '{cpf}', '{phone}', {wage}, '{office}', '{days}', '{address}')")
+                    messagebox.showinfo("Sucesso", "Funcionário adicionado com sucesso!")
+                    app.destroy()
+                    self.goto(self.HomeWindow)
+                except:
+                    messagebox.showinfo("Erro", "Erro ao adicionar funcionário, talvez o funcionário já exista")
+
+            app.geometry("{}x{}+{}+{}".format(str(windowWidth),500,str(windowX),str(windowY)))
+
+            atribs=[]
             nameEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Nome")
             nameEntry.pack(padx=10, pady=10)
-            emailEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="email")
+            emailEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Email")
             emailEntry.pack(padx=10, pady=10)
             cpfEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="CPF")
             cpfEntry.pack(padx=10, pady=10)
@@ -444,13 +637,21 @@ class App:
             phoneEntry.pack(padx=10, pady=10)
             wageEntry=customtkinter.CTkEntry(mainFrame, placeholder_text="salário")
             wageEntry.pack(padx=10, pady=10)
-            daysEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Escala semanal")
+            daysEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Data da contratação")
             daysEntry.pack(padx=10, pady=10)
+            officeEntry=customtkinter.CTkComboBox(mainFrame, width=300, values=["Gerente", "Vendedor", "Atendente", "Limpeza", "Segurança", "TI"])
+            officeEntry.pack(padx=10, pady=10)
             addressEntry=customtkinter.CTkEntry(mainFrame, width=300, placeholder_text="Endereço")
             addressEntry.pack(padx=10, pady=10)
-            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=0)
+            addButton=customtkinter.CTkButton(mainFrame, text="Adicionar", command=add)
             addButton.pack(padx=10, pady=10)
-        
+            atribs.append(nameEntry)
+            atribs.append(emailEntry)
+            atribs.append(cpfEntry)
+            atribs.append(phoneEntry)
+            atribs.append(wageEntry)
+            atribs.append(daysEntry)
+            atribs.append(addressEntry)
 
 
         app.mainloop()

@@ -1,4 +1,5 @@
 def enc(x):
+    x=str(x)
     out=""
     state=1
     for l in x:
@@ -12,6 +13,7 @@ def enc(x):
     return out[::-1]
 
 def dec(x):
+    x=str(x)
     out=""
     state=1
     for l in x[::-1]:
