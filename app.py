@@ -183,6 +183,7 @@ class App:
             tabview.tab("Consulta veterinária").grid_rowconfigure((1,2,3,4,5), weight=1)
             tabview.tab("Consulta veterinária").grid_columnconfigure((0,1,2,3,4,5,6), weight=1)
             schedules=self.db.selectAll(self.db.SCHEDULES_TABLE)[:30]
+            schedules=sorted(schedules, key=lambda x:int(CGV.dec(x["date"]).replace("/", ""))+int(CGV.dec(x["hour"]).replace(":", "")), reverse=True)
             rowStatus=[0,0,0,0,0,0,0]
             for i in range(len(schedules)):
                 date=CGV.dec(schedules[i]["date"])
